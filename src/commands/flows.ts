@@ -96,13 +96,47 @@ function buildUpdateDraftCommand(): Command {
     });
 }
 
+function buildChatCommand(): Command {
+  return new Command('chat')
+    .description('Conversation chat flows (WhatsApp / Instagram / Messenger chatbots)')
+    .addCommand(
+      new Command('list')
+        .description('List chat flows')
+        .option('-s, --status <status>', 'draft | active | paused')
+        .option('-l, --limit <n>', 'Max rows', '20')
+        .option('--format <format>', 'table | json | csv', 'table')
+        .action(async (opts: { status?: string; limit?: string; format?: string }) => {
+          const limit = Math.min(parseInt(opts.limit ?? '20', 10) || 20, 100);
+          const args: Record<string, unknown> = { limit };
+          if (opts.status) args.status = opts.status;
+          const result = await callTool('list_chat_flows', args);
+          printResult(result, {
+            format: parseFormat(opts.format),
+            columns: ['id', 'name', 'trigger', 'status', 'executionCount', 'updatedAt'],
+          });
+        }),
+    )
+    .addCommand(
+      new Command('get')
+        .description('Get one chat flow including its full node graph')
+        .argument('<id>', 'Chat flow id')
+        .option('--format <format>', 'table | json', 'json')
+        .action(async (id: string, opts: { format?: string }) => {
+          if (!id) throw new ValidationError('Chat flow id required');
+          const result = await callTool('get_chat_flow', { flowId: id });
+          printRecord(result, parseFormat(opts.format, 'json'));
+        }),
+    );
+}
+
 export function buildFlowsCommand(): Command {
   return new Command('flows')
-    .description('Manage email flows')
+    .description('Manage email flows + conversation chat flows')
     .addCommand(buildListCommand())
     .addCommand(buildPerformanceCommand())
     .addCommand(buildActivateCommand())
     .addCommand(buildCancelCommand())
     .addCommand(buildCreateDraftCommand())
-    .addCommand(buildUpdateDraftCommand());
+    .addCommand(buildUpdateDraftCommand())
+    .addCommand(buildChatCommand());
 }

@@ -30,9 +30,14 @@ import { buildSkillsCommand } from './commands/skills.js';
 import { buildAliasesCommand } from './commands/aliases.js';
 import { buildWorkspaceCommand } from './commands/workspace.js';
 import { buildDraftsCommand } from './commands/drafts.js';
+import { buildBroadcastsCommand } from './commands/broadcasts.js';
+import { buildBoardsCommand } from './commands/boards.js';
+import { buildContentCommand } from './commands/content.js';
+import { buildSupportCommand } from './commands/support.js';
+import { buildFinanceCommand } from './commands/finance.js';
 import { CliError } from './lib/errors.js';
 
-const VERSION = '0.2.0';
+const VERSION = '0.3.0';
 
 function buildProgram(): Command {
   const program = new Command();
@@ -60,6 +65,11 @@ function buildProgram(): Command {
   program.addCommand(buildAliasesCommand());
   program.addCommand(buildWorkspaceCommand());
   program.addCommand(buildDraftsCommand());
+  program.addCommand(buildBroadcastsCommand());
+  program.addCommand(buildBoardsCommand());
+  program.addCommand(buildContentCommand());
+  program.addCommand(buildSupportCommand());
+  program.addCommand(buildFinanceCommand());
 
   return program;
 }

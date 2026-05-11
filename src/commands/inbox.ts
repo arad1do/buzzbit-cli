@@ -114,13 +114,34 @@ function buildCreateTemplateCommand(): Command {
     });
 }
 
+function buildAutoReplyRulesCommand(): Command {
+  return new Command('auto-reply-rules')
+    .description('List email auto-reply rules (intent-keyed templates)')
+    .option('--enabled <bool>', 'Filter by enabled state', 'true')
+    .option('-l, --limit <n>', 'Max rows', '20')
+    .option('--format <format>', 'table | json | csv', 'table')
+    .action(async (opts: { enabled?: string; limit?: string; format?: string }) => {
+      const limit = Math.min(parseInt(opts.limit ?? '20', 10) || 20, 100);
+      const args: Record<string, unknown> = { limit };
+      if (opts.enabled !== undefined && opts.enabled !== '') {
+        args.enabled = opts.enabled === 'true';
+      }
+      const result = await callTool('list_auto_reply_rules', args);
+      printResult(result, {
+        format: parseFormat(opts.format),
+        columns: ['intentType', 'enabled', 'replyType', 'confidenceMin', 'updatedAt'],
+      });
+    });
+}
+
 export function buildInboxCommand(): Command {
   return new Command('inbox')
-    .description('View conversations and send DM templates')
+    .description('View conversations, send DM templates, manage auto-reply rules')
     .addCommand(buildListCommand())
     .addCommand(buildShowCommand())
     .addCommand(buildTemplatesCommand())
     .addCommand(buildSendTemplateCommand())
     .addCommand(buildCreateDraftCommand())
-    .addCommand(buildCreateTemplateCommand());
+    .addCommand(buildCreateTemplateCommand())
+    .addCommand(buildAutoReplyRulesCommand());
 }

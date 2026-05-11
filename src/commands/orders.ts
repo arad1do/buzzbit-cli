@@ -38,9 +38,30 @@ function buildGetCommand(): Command {
     });
 }
 
+function buildShipmentsCommand(): Command {
+  return new Command('shipments')
+    .description('List shipments tied to orders')
+    .option('-s, --status <status>', 'PENDING | SHIPPED | IN_TRANSIT | DELIVERED | EXCEPTION | CANCELLED')
+    .option('--order <id>', 'Filter to one order')
+    .option('-l, --limit <n>', 'Max rows', '20')
+    .option('--format <format>', 'table | json | csv', 'table')
+    .action(async (opts: { status?: string; order?: string; limit?: string; format?: string }) => {
+      const limit = Math.min(parseInt(opts.limit ?? '20', 10) || 20, 100);
+      const args: Record<string, unknown> = { limit };
+      if (opts.status) args.status = opts.status;
+      if (opts.order) args.orderId = opts.order;
+      const result = await callTool('list_shipments', args);
+      printResult(result, {
+        format: parseFormat(opts.format),
+        columns: ['trackingNumber', 'carrier', 'status', 'shipDate', 'estimatedDelivery'],
+      });
+    });
+}
+
 export function buildOrdersCommand(): Command {
   return new Command('orders')
-    .description('List and inspect orders')
+    .description('List and inspect orders + shipments')
     .addCommand(buildListCommand())
-    .addCommand(buildGetCommand());
+    .addCommand(buildGetCommand())
+    .addCommand(buildShipmentsCommand());
 }

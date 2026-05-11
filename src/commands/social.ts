@@ -120,13 +120,33 @@ function buildBulkCreateCommand(): Command {
     });
 }
 
+function buildAutomationCommand(): Command {
+  return new Command('automation')
+    .description('Instagram automation rules (auto-DM on comment / story reply / follow)')
+    .addCommand(
+      new Command('list')
+        .description('List IG automation rules')
+        .option('--trigger <type>', 'COMMENT | STORY_REPLY | FOLLOW')
+        .option('-l, --limit <n>', 'Max rows', '20')
+        .option('--format <format>', 'table | json | csv', 'table')
+        .action(async (opts: { trigger?: string; limit?: string; format?: string }) => {
+          const limit = Math.min(parseInt(opts.limit ?? '20', 10) || 20, 100);
+          const args: Record<string, unknown> = { limit };
+          if (opts.trigger) args.triggerType = opts.trigger;
+          const result = await callTool('list_instagram_automation_rules', args);
+          printResult(result, { format: parseFormat(opts.format) });
+        }),
+    );
+}
+
 export function buildSocialCommand(): Command {
   return new Command('social')
-    .description('Manage and publish social posts')
+    .description('Manage social posts + Instagram automation rules')
     .addCommand(buildListCommand())
     .addCommand(buildPerformanceCommand())
     .addCommand(buildPublishCommand())
     .addCommand(buildCreateDraftCommand())
     .addCommand(buildUpdateDraftCommand())
-    .addCommand(buildBulkCreateCommand());
+    .addCommand(buildBulkCreateCommand())
+    .addCommand(buildAutomationCommand());
 }

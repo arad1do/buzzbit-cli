@@ -98,11 +98,112 @@ function buildTagCommand(): Command {
     });
 }
 
+function buildVipTiersCommand(): Command {
+  return new Command('vip-tiers')
+    .description('Manage VIP reward tiers')
+    .addCommand(
+      new Command('list')
+        .description('List VIP tiers')
+        .option('--active', 'Only active tiers')
+        .option('--format <format>', 'table | json | csv', 'table')
+        .action(async (opts: { active?: boolean; format?: string }) => {
+          const args: Record<string, unknown> = {};
+          if (opts.active) args.active = true;
+          const result = await callTool('list_vip_tiers', args);
+          printResult(result, {
+            format: parseFormat(opts.format),
+            columns: ['name', 'spendThreshold', 'rewardType', 'rewardValue', 'isActive'],
+          });
+        }),
+    )
+    .addCommand(
+      new Command('create')
+        .description('Create a VIP reward tier')
+        .requiredOption('--name <name>')
+        .requiredOption('--spend <amount>', 'Lifetime spend threshold')
+        .requiredOption('--reward-type <type>', 'DISCOUNT_CODE | FREE_SHIPPING | STORE_CREDIT')
+        .requiredOption('--reward-value <value>', 'Reward value (percent or currency)')
+        .option('--orders <n>', 'Optional minimum order count')
+        .option('--format <format>', 'table | json', 'table')
+        .action(async (opts: { name: string; spend: string; rewardType: string; rewardValue: string; orders?: string; format?: string }) => {
+          const args: Record<string, unknown> = {
+            name: opts.name,
+            spendThreshold: parseFloat(opts.spend),
+            rewardType: opts.rewardType,
+            rewardValue: parseFloat(opts.rewardValue),
+          };
+          if (opts.orders) args.orderCountThreshold = parseInt(opts.orders, 10);
+          const result = await callTool('create_vip_tier', args);
+          printRecord(result, parseFormat(opts.format));
+        }),
+    );
+}
+
+function buildCartsCommand(): Command {
+  return new Command('carts')
+    .description('List abandoned / active carts')
+    .option('-s, --status <status>', 'ACTIVE | ABANDONED | RECOVERED | CONVERTED', 'ABANDONED')
+    .option('--customer <id>', 'Filter to one customer')
+    .option('-l, --limit <n>', 'Max rows', '20')
+    .option('--format <format>', 'table | json | csv', 'table')
+    .action(async (opts: { status?: string; customer?: string; limit?: string; format?: string }) => {
+      const limit = Math.min(parseInt(opts.limit ?? '20', 10) || 20, 100);
+      const args: Record<string, unknown> = { limit };
+      if (opts.status) args.status = opts.status;
+      if (opts.customer) args.customerId = opts.customer;
+      const result = await callTool('list_carts', args);
+      printResult(result, {
+        format: parseFormat(opts.format),
+        columns: ['id', 'customerId', 'subtotal', 'status', 'abandonedAt', 'lastActivityAt'],
+      });
+    });
+}
+
+function buildEventsCommand(): Command {
+  return new Command('events')
+    .description('List customer behavior events')
+    .option('--customer <id>', 'Filter to one customer')
+    .option('--type <type>', 'Event type filter')
+    .option('--since <iso>', 'Events after this datetime')
+    .option('-l, --limit <n>', 'Max rows', '50')
+    .option('--format <format>', 'table | json | csv', 'json')
+    .action(async (opts: { customer?: string; type?: string; since?: string; limit?: string; format?: string }) => {
+      const limit = Math.min(parseInt(opts.limit ?? '50', 10) || 50, 200);
+      const args: Record<string, unknown> = { limit };
+      if (opts.customer) args.customerId = opts.customer;
+      if (opts.type) args.eventType = opts.type;
+      if (opts.since) args.since = opts.since;
+      const result = await callTool('list_customer_events', args);
+      printResult(result, { format: parseFormat(opts.format, 'json') });
+    });
+}
+
+function buildStockNotifyCommand(): Command {
+  return new Command('stock-notify')
+    .description('List back-in-stock notification subscribers')
+    .option('--product <id>', 'Filter to one product')
+    .option('--pending', 'Only subscribers who have not been notified yet')
+    .option('-l, --limit <n>', 'Max rows', '50')
+    .option('--format <format>', 'table | json | csv', 'table')
+    .action(async (opts: { product?: string; pending?: boolean; limit?: string; format?: string }) => {
+      const limit = Math.min(parseInt(opts.limit ?? '50', 10) || 50, 200);
+      const args: Record<string, unknown> = { limit };
+      if (opts.product) args.productId = opts.product;
+      if (opts.pending) args.pending = true;
+      const result = await callTool('list_stock_notify_subscribers', args);
+      printResult(result, { format: parseFormat(opts.format) });
+    });
+}
+
 export function buildCustomersCommand(): Command {
   return new Command('customers')
-    .description('List, search, get, and tag customers')
+    .description('List, search, get, tag — plus VIP tiers, carts, events, stock-notify')
     .addCommand(buildListCommand())
     .addCommand(buildGetCommand())
     .addCommand(buildSearchCommand())
-    .addCommand(buildTagCommand());
+    .addCommand(buildTagCommand())
+    .addCommand(buildVipTiersCommand())
+    .addCommand(buildCartsCommand())
+    .addCommand(buildEventsCommand())
+    .addCommand(buildStockNotifyCommand());
 }

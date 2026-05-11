@@ -156,13 +156,94 @@ function buildValidateHtmlCommand(): Command {
     });
 }
 
+function buildTemplatesCommand(): Command {
+  return new Command('templates')
+    .description('Manage reusable email templates')
+    .addCommand(
+      new Command('list')
+        .description('List email templates (workspace + global defaults)')
+        .option('--category <cat>', 'Filter by category')
+        .option('--no-global', 'Exclude built-in defaults')
+        .option('-l, --limit <n>', 'Max rows', '20')
+        .option('--format <format>', 'table | json | csv', 'table')
+        .action(async (opts: { category?: string; global?: boolean; limit?: string; format?: string }) => {
+          const limit = Math.min(parseInt(opts.limit ?? '20', 10) || 20, 100);
+          const args: Record<string, unknown> = { limit, includeGlobal: opts.global !== false };
+          if (opts.category) args.category = opts.category;
+          const result = await callTool('list_email_templates', args);
+          printResult(result, {
+            format: parseFormat(opts.format),
+            columns: ['id', 'name', 'category', 'subject', 'isDefault', 'updatedAt'],
+          });
+        }),
+    )
+    .addCommand(
+      new Command('get')
+        .description('Get one template with full HTML body')
+        .argument('<id>', 'Template id')
+        .option('--format <format>', 'table | json', 'json')
+        .action(async (id: string, opts: { format?: string }) => {
+          if (!id) throw new ValidationError('Template id required');
+          const result = await callTool('get_email_template', { templateId: id });
+          printRecord(result, parseFormat(opts.format, 'json'));
+        }),
+    )
+    .addCommand(
+      new Command('create')
+        .description('Save a new reusable email template')
+        .requiredOption('--name <name>')
+        .requiredOption('--category <cat>', 'e.g. welcome, abandonment, promo, newsletter')
+        .requiredOption('--subject <text>')
+        .requiredOption('--html-file <path>', 'Path to HTML body')
+        .option('--description <text>')
+        .option('--preheader <text>')
+        .option('--text-file <path>', 'Optional plain-text fallback')
+        .option('--format <format>', 'table | json', 'table')
+        .action(async (opts: {
+          name: string;
+          category: string;
+          subject: string;
+          htmlFile: string;
+          description?: string;
+          preheader?: string;
+          textFile?: string;
+          format?: string;
+        }) => {
+          let html: string;
+          try {
+            html = readFileSync(opts.htmlFile, 'utf8');
+          } catch (err) {
+            throw new ValidationError(`Cannot read --html-file: ${err instanceof Error ? err.message : String(err)}`);
+          }
+          const args: Record<string, unknown> = {
+            name: opts.name,
+            category: opts.category,
+            subject: opts.subject,
+            html,
+          };
+          if (opts.description) args.description = opts.description;
+          if (opts.preheader) args.preheader = opts.preheader;
+          if (opts.textFile) {
+            try {
+              args.text = readFileSync(opts.textFile, 'utf8');
+            } catch (err) {
+              throw new ValidationError(`Cannot read --text-file: ${err instanceof Error ? err.message : String(err)}`);
+            }
+          }
+          const result = await callTool('create_email_template', args);
+          printRecord(result, parseFormat(opts.format));
+        }),
+    );
+}
+
 export function buildCampaignsCommand(): Command {
   return new Command('campaigns')
-    .description('Manage and send email campaigns')
+    .description('Manage and send email campaigns + templates')
     .addCommand(buildListCommand())
     .addCommand(buildMetricsCommand())
     .addCommand(buildSendCommand())
     .addCommand(buildCreateDraftCommand())
     .addCommand(buildUpdateDraftCommand())
-    .addCommand(buildValidateHtmlCommand());
+    .addCommand(buildValidateHtmlCommand())
+    .addCommand(buildTemplatesCommand());
 }
