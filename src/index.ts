@@ -35,9 +35,13 @@ import { buildBoardsCommand } from './commands/boards.js';
 import { buildContentCommand } from './commands/content.js';
 import { buildSupportCommand } from './commands/support.js';
 import { buildFinanceCommand } from './commands/finance.js';
+import { buildTeamCommand } from './commands/team.js';
+import { buildBillingCommand } from './commands/billing.js';
+import { buildIntegrationsCommand } from './commands/integrations.js';
+import { buildWebhooksCommand } from './commands/webhooks.js';
 import { CliError } from './lib/errors.js';
 
-const VERSION = '0.3.0';
+const VERSION = '0.4.0';
 
 function buildProgram(): Command {
   const program = new Command();
@@ -70,6 +74,10 @@ function buildProgram(): Command {
   program.addCommand(buildContentCommand());
   program.addCommand(buildSupportCommand());
   program.addCommand(buildFinanceCommand());
+  program.addCommand(buildTeamCommand());
+  program.addCommand(buildBillingCommand());
+  program.addCommand(buildIntegrationsCommand());
+  program.addCommand(buildWebhooksCommand());
 
   return program;
 }
