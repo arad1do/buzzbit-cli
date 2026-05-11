@@ -3,6 +3,7 @@
  */
 
 import { Command } from 'commander';
+import { readFileSync } from 'node:fs';
 import { callTool } from '../lib/mcpClient.js';
 import { parseFormat, printResult, printRecord } from '../lib/formatter.js';
 import { ValidationError } from '../lib/errors.js';
@@ -59,10 +60,73 @@ function buildPublishCommand(): Command {
     });
 }
 
+function buildCreateDraftCommand(): Command {
+  return new Command('create-draft')
+    .description('Create a single social post draft')
+    .requiredOption('--platform <platform>', 'facebook | instagram | linkedin | tiktok | pinterest')
+    .requiredOption('--caption <text>', 'Post caption / body')
+    .option('--media <id>', 'Media id (from `bbx media upload`)')
+    .option('--scheduled-for <iso>', 'ISO 8601 schedule time (omit to leave as DRAFT)')
+    .option('--format <format>', 'table | json', 'table')
+    .action(async (opts: { platform: string; caption: string; media?: string; scheduledFor?: string; format?: string }) => {
+      const args: Record<string, unknown> = { platform: opts.platform, caption: opts.caption };
+      if (opts.media) args.mediaId = opts.media;
+      if (opts.scheduledFor) args.scheduledFor = opts.scheduledFor;
+      const result = await callTool('create_social_post_draft', args);
+      printRecord(result, parseFormat(opts.format));
+    });
+}
+
+function buildUpdateDraftCommand(): Command {
+  return new Command('update-draft')
+    .description('Update an existing social post draft')
+    .argument('<id>', 'Social post id')
+    .option('--caption <text>')
+    .option('--scheduled-for <iso>')
+    .option('--format <format>', 'table | json', 'table')
+    .action(async (id: string, opts: { caption?: string; scheduledFor?: string; format?: string }) => {
+      if (!id) throw new ValidationError('Post id required');
+      const args: Record<string, unknown> = { postId: id };
+      if (opts.caption) args.caption = opts.caption;
+      if (opts.scheduledFor) args.scheduledFor = opts.scheduledFor;
+      const result = await callTool('update_social_post_draft', args);
+      printRecord(result, parseFormat(opts.format));
+    });
+}
+
+function buildBulkCreateCommand(): Command {
+  return new Command('bulk-create')
+    .description('Create multiple social posts from a JSON file (array of post objects, max 50)')
+    .requiredOption('--file <path>', 'JSON array of { platform, caption, mediaId?, scheduledFor? }')
+    .option('--format <format>', 'table | json', 'table')
+    .action(async (opts: { file: string; format?: string }) => {
+      let raw: string;
+      try {
+        raw = readFileSync(opts.file, 'utf8');
+      } catch (err) {
+        throw new ValidationError(`Cannot read --file: ${err instanceof Error ? err.message : String(err)}`);
+      }
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(raw);
+      } catch (err) {
+        throw new ValidationError(`--file must be valid JSON: ${err instanceof Error ? err.message : String(err)}`);
+      }
+      if (!Array.isArray(parsed)) throw new ValidationError('--file must contain a JSON array');
+      if (parsed.length === 0) throw new ValidationError('Array is empty');
+      if (parsed.length > 50) throw new ValidationError('Max 50 posts per bulk operation');
+      const result = await callTool('bulk_create_social_posts', { posts: parsed });
+      printRecord(result, parseFormat(opts.format));
+    });
+}
+
 export function buildSocialCommand(): Command {
   return new Command('social')
     .description('Manage and publish social posts')
     .addCommand(buildListCommand())
     .addCommand(buildPerformanceCommand())
-    .addCommand(buildPublishCommand());
+    .addCommand(buildPublishCommand())
+    .addCommand(buildCreateDraftCommand())
+    .addCommand(buildUpdateDraftCommand())
+    .addCommand(buildBulkCreateCommand());
 }

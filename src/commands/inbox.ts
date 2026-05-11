@@ -77,11 +77,50 @@ function buildSendTemplateCommand(): Command {
     });
 }
 
+function buildCreateDraftCommand(): Command {
+  return new Command('create-draft')
+    .description('Create a draft DM to a customer (does not send)')
+    .requiredOption('--customer <id>', 'Customer id')
+    .requiredOption('--channel <channel>', 'whatsapp | messenger | instagram')
+    .requiredOption('--body <text>', 'Message body')
+    .option('--format <format>', 'table | json', 'table')
+    .action(async (opts: { customer: string; channel: string; body: string; format?: string }) => {
+      const result = await callTool('create_dm_draft', {
+        customerId: opts.customer,
+        channel: opts.channel,
+        body: opts.body,
+      });
+      printRecord(result, parseFormat(opts.format));
+    });
+}
+
+function buildCreateTemplateCommand(): Command {
+  return new Command('create-template')
+    .description('Create a reusable DM template')
+    .requiredOption('--name <name>', 'Template name')
+    .requiredOption('--body <text>', 'Template body (may include {{firstName}} variables)')
+    .option('--channel <channel>', 'whatsapp | messenger | instagram', 'whatsapp')
+    .option('--description <text>', 'What this template is for')
+    .option('--format <format>', 'table | json', 'table')
+    .action(async (opts: { name: string; body: string; channel?: string; description?: string; format?: string }) => {
+      const args: Record<string, unknown> = {
+        name: opts.name,
+        body: opts.body,
+        channel: opts.channel ?? 'whatsapp',
+      };
+      if (opts.description) args.description = opts.description;
+      const result = await callTool('create_dm_template', args);
+      printRecord(result, parseFormat(opts.format));
+    });
+}
+
 export function buildInboxCommand(): Command {
   return new Command('inbox')
     .description('View conversations and send DM templates')
     .addCommand(buildListCommand())
     .addCommand(buildShowCommand())
     .addCommand(buildTemplatesCommand())
-    .addCommand(buildSendTemplateCommand());
+    .addCommand(buildSendTemplateCommand())
+    .addCommand(buildCreateDraftCommand())
+    .addCommand(buildCreateTemplateCommand());
 }

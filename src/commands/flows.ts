@@ -64,11 +64,45 @@ function buildCancelCommand(): Command {
     });
 }
 
+function buildCreateDraftCommand(): Command {
+  return new Command('create-draft')
+    .description('Create a new email flow draft')
+    .requiredOption('--name <name>', 'Internal flow name')
+    .requiredOption('--trigger <trigger>', 'cart_abandoned | welcome | post_purchase | browse_abandoned | win_back | birthday | order_fulfilled')
+    .option('--description <text>', 'Optional description')
+    .option('--format <format>', 'table | json', 'table')
+    .action(async (opts: { name: string; trigger: string; description?: string; format?: string }) => {
+      const args: Record<string, unknown> = { name: opts.name, trigger: opts.trigger };
+      if (opts.description) args.description = opts.description;
+      const result = await callTool('create_flow_draft', args);
+      printRecord(result, parseFormat(opts.format));
+    });
+}
+
+function buildUpdateDraftCommand(): Command {
+  return new Command('update-draft')
+    .description('Update an existing flow draft')
+    .argument('<id>', 'Flow id')
+    .option('--name <name>')
+    .option('--description <text>')
+    .option('--format <format>', 'table | json', 'table')
+    .action(async (id: string, opts: { name?: string; description?: string; format?: string }) => {
+      if (!id) throw new ValidationError('Flow id required');
+      const args: Record<string, unknown> = { flowId: id };
+      if (opts.name) args.name = opts.name;
+      if (opts.description) args.description = opts.description;
+      const result = await callTool('update_flow_draft', args);
+      printRecord(result, parseFormat(opts.format));
+    });
+}
+
 export function buildFlowsCommand(): Command {
   return new Command('flows')
     .description('Manage email flows')
     .addCommand(buildListCommand())
     .addCommand(buildPerformanceCommand())
     .addCommand(buildActivateCommand())
-    .addCommand(buildCancelCommand());
+    .addCommand(buildCancelCommand())
+    .addCommand(buildCreateDraftCommand())
+    .addCommand(buildUpdateDraftCommand());
 }

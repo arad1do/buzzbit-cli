@@ -19,14 +19,20 @@ import { buildFlowsCommand } from './commands/flows.js';
 import { buildCampaignsCommand } from './commands/campaigns.js';
 import { buildSocialCommand } from './commands/social.js';
 import { buildInboxCommand } from './commands/inbox.js';
+import { buildPopupsCommand } from './commands/popups.js';
+import { buildSegmentsCommand } from './commands/segments.js';
+import { buildMediaCommand } from './commands/media.js';
 import { buildDiscountsCommand } from './commands/discounts.js';
 import { buildMetricsCommand } from './commands/metrics.js';
 import { buildReportCommandTree } from './commands/report.js';
 import { buildToolsCommand } from './commands/tools.js';
 import { buildSkillsCommand } from './commands/skills.js';
+import { buildAliasesCommand } from './commands/aliases.js';
+import { buildWorkspaceCommand } from './commands/workspace.js';
+import { buildDraftsCommand } from './commands/drafts.js';
 import { CliError } from './lib/errors.js';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 
 function buildProgram(): Command {
   const program = new Command();
@@ -43,11 +49,17 @@ function buildProgram(): Command {
   program.addCommand(buildCampaignsCommand());
   program.addCommand(buildSocialCommand());
   program.addCommand(buildInboxCommand());
+  program.addCommand(buildPopupsCommand());
+  program.addCommand(buildSegmentsCommand());
+  program.addCommand(buildMediaCommand());
   program.addCommand(buildDiscountsCommand());
   program.addCommand(buildMetricsCommand());
   program.addCommand(buildReportCommandTree());
   program.addCommand(buildToolsCommand());
   program.addCommand(buildSkillsCommand());
+  program.addCommand(buildAliasesCommand());
+  program.addCommand(buildWorkspaceCommand());
+  program.addCommand(buildDraftsCommand());
 
   return program;
 }

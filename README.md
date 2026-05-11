@@ -36,23 +36,29 @@ bbx customers list           # runs against client-a
 
 You can also override per-invocation via env: `BBX_API_KEY=bz_live_… bbx customers list`.
 
-## What's in v0.1
+## What's in v0.2
 
 | Group | Commands |
 |---|---|
 | `bbx auth` | `login`, `logout`, `status`, `use`, `list` |
-| `bbx customers` | `list`, `get`, `search`, `tag` |
+| `bbx customers` | `list`, `get`, `search`, `tag` (single + bulk) |
 | `bbx orders` | `list`, `get` |
 | `bbx products` | `list`, `get`, `performance` |
-| `bbx flows` | `list`, `performance`, `activate`, `cancel` |
-| `bbx campaigns` | `list`, `metrics`, `send` |
-| `bbx social` | `list`, `performance`, `publish` |
-| `bbx inbox` | `list`, `show`, `templates`, `send-template` |
+| `bbx flows` | `list`, `performance`, `activate`, `cancel`, `create-draft`, `update-draft` |
+| `bbx campaigns` | `list`, `metrics`, `send`, `create-draft` (text or HTML file), `update-draft`, `validate-html` |
+| `bbx social` | `list`, `performance`, `publish`, `create-draft`, `update-draft`, `bulk-create` |
+| `bbx inbox` | `list`, `show`, `templates`, `send-template`, `create-draft`, `create-template` |
+| `bbx popups` | `list`, `performance`, `create-draft`, `update-draft` |
+| `bbx segments` | `list`, `create`, `update` (JSON rule definitions) |
+| `bbx media` | `upload` (images / videos from disk) |
 | `bbx discounts` | `create` |
 | `bbx metrics` | `overview`, `revenue`, `growth`, `limits` |
-| `bbx report` | (composes overview + revenue + growth + top products into markdown) |
+| `bbx report` | composes a multi-section markdown snapshot |
 | `bbx tools` | `list`, `describe` |
 | `bbx skills` | `list`, `upload`, `delete` (Agency tier) |
+| `bbx aliases` | `list`, `create`, `delete` (per-workspace tool renaming) |
+| `bbx workspace` | `brand`, `limits` |
+| `bbx drafts` | `delete` (24h soft-delete across campaign/flow/popup/social/dm/segment) |
 
 ## Output formats
 
