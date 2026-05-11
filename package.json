@@ -1,0 +1,51 @@
+{
+  "name": "@buzzbitx/cli",
+  "version": "0.1.0",
+  "description": "Command-line interface for BuzzBit X via the Model Context Protocol",
+  "type": "module",
+  "bin": {
+    "bbx": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "clean": "rimraf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "buzzbit",
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "marketing-automation",
+    "ecommerce",
+    "cli"
+  ],
+  "author": "Arad Doron <arad1doron@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://docs.buzzbitx.com/cli",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arad1do/buzzbit-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/arad1do/buzzbit-cli/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "rimraf": "^5.0.7",
+    "typescript": "^5.4.5"
+  }
+}
