@@ -1,6 +1,6 @@
 // AUTO-GENERATED FROM MCP REGISTRY — do not edit by hand.
 // Run `npm run generate:cli` to regenerate.
-// Source snapshot timestamp: 2026-05-12T09:10:19.988Z
+// Source snapshot timestamp: 2026-05-12T10:21:33.556Z
 //
 // The auto-generated commands live under a single `bbx mcp` namespace so
 // they don't collide with the hand-tuned commands at the top level. Use
@@ -9,12 +9,14 @@
 // MCP-tool calls or when a hand-tuned wrapper doesn't exist yet.
 
 import { Command } from 'commander';
+import { buildGeneratedCommand as buildGenerated_ads } from './ads.js';
 import { buildGeneratedCommand as buildGenerated_analytics } from './analytics.js';
 import { buildGeneratedCommand as buildGenerated_billing } from './billing.js';
 import { buildGeneratedCommand as buildGenerated_boards } from './boards.js';
 import { buildGeneratedCommand as buildGenerated_broadcasts } from './broadcasts.js';
 import { buildGeneratedCommand as buildGenerated_campaigns } from './campaigns.js';
 import { buildGeneratedCommand as buildGenerated_content } from './content.js';
+import { buildGeneratedCommand as buildGenerated_coo } from './coo.js';
 import { buildGeneratedCommand as buildGenerated_customers } from './customers.js';
 import { buildGeneratedCommand as buildGenerated_discounts } from './discounts.js';
 import { buildGeneratedCommand as buildGenerated_dm } from './dm.js';
@@ -35,12 +37,14 @@ import { buildGeneratedCommand as buildGenerated_workspace } from './workspace.j
 export function buildMcpCommand(): Command {
   const mcp = new Command('mcp')
     .description('Direct MCP-tool invocation. Auto-generated from the live MCP registry — every server-side tool is reachable here.');
+  mcp.addCommand(buildGenerated_ads());
   mcp.addCommand(buildGenerated_analytics());
   mcp.addCommand(buildGenerated_billing());
   mcp.addCommand(buildGenerated_boards());
   mcp.addCommand(buildGenerated_broadcasts());
   mcp.addCommand(buildGenerated_campaigns());
   mcp.addCommand(buildGenerated_content());
+  mcp.addCommand(buildGenerated_coo());
   mcp.addCommand(buildGenerated_customers());
   mcp.addCommand(buildGenerated_discounts());
   mcp.addCommand(buildGenerated_dm());
