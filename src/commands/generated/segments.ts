@@ -1,6 +1,6 @@
 // AUTO-GENERATED FROM MCP REGISTRY — do not edit by hand.
 // Run `npm run generate:cli` to regenerate.
-// Source snapshot timestamp: 2026-05-12T09:10:19.978Z
+// Source snapshot timestamp: 2026-05-12T10:21:33.551Z
 
 import { Command } from 'commander';
 import { callTool } from '../../lib/mcpClient.js';
