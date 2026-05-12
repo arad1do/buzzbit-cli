@@ -1,6 +1,6 @@
 // AUTO-GENERATED FROM MCP REGISTRY — do not edit by hand.
 // Run `npm run generate:cli` to regenerate.
-// Source snapshot timestamp: 2026-05-12T08:26:37.749Z
+// Source snapshot timestamp: 2026-05-12T09:10:19.963Z
 
 import { Command } from 'commander';
 import { callTool } from '../../lib/mcpClient.js';
@@ -8,7 +8,7 @@ import { parseFormat, printResult } from '../../lib/formatter.js';
 
 export function buildGeneratedCommand(): Command {
   const group = new Command('boards')
-    .description('Auto-generated boards commands. 10 subcommands.');
+    .description('Auto-generated boards commands. 11 subcommands.');
 
   group.command('create-board-automation')
     .description("Create a rule-based board automation: trigger (item activity filter) → actions (side effects). Defaults to enabled. Refer to existing BoardAutomation rows via list_board_automations for the exact trigger/actions JSON shape.")
@@ -151,6 +151,17 @@ export function buildGeneratedCommand(): Command {
       if (opts['columnId'] !== undefined) args['columnId'] = opts['columnId'];
       if (opts['value'] !== undefined) args['value'] = opts['value'];
       const result = await callTool('update_board_item_cell', args);
+      printResult(result, { format: parseFormat(opts.format, 'json') });
+    });
+
+  group.command('find system board')
+    .description("Look up the canonical board id for a system-board kind in this workspace. Cheaper than list_boards + filter for the Contacts / Inventory / Orders / Ads / Finance / Marketing system boards.")
+    .option('--kind <value>', "System board kind (ECOM_CONTACTS / ECOM_INVENTORY / ECOM_ORDERS / ADS / FINANCE / MARKETING / etc).")
+    .option('--format <fmt>', 'table | json | csv', 'json')
+    .action(async (opts) => {
+      const args: Record<string, unknown> = {};
+      if (opts['kind'] !== undefined) args['kind'] = opts['kind'];
+      const result = await callTool('find_system_board', args);
       printResult(result, { format: parseFormat(opts.format, 'json') });
     });
 
