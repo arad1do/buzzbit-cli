@@ -39,9 +39,10 @@ import { buildTeamCommand } from './commands/team.js';
 import { buildBillingCommand } from './commands/billing.js';
 import { buildIntegrationsCommand } from './commands/integrations.js';
 import { buildWebhooksCommand } from './commands/webhooks.js';
+import { buildMcpCommand } from './commands/generated/index.js';
 import { CliError } from './lib/errors.js';
 
-const VERSION = '0.4.0';
+const VERSION = '0.5.0';
 
 function buildProgram(): Command {
   const program = new Command();
@@ -78,6 +79,10 @@ function buildProgram(): Command {
   program.addCommand(buildBillingCommand());
   program.addCommand(buildIntegrationsCommand());
   program.addCommand(buildWebhooksCommand());
+
+  // Auto-generated MCP commands — `bbx mcp <group> <verb>` exposes every
+  // server-side tool directly (regenerate via `npm run generate:cli`).
+  program.addCommand(buildMcpCommand());
 
   return program;
 }
