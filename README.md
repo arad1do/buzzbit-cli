@@ -1,5 +1,7 @@
 # @buzzbitx/cli — `bbx`
 
+[![verify](https://github.com/arad1do/buzzbit-cli/actions/workflows/verify.yml/badge.svg?branch=main)](https://github.com/arad1do/buzzbit-cli/actions/workflows/verify.yml)
+
 Command-line interface for [BuzzBit X](https://buzzbitx.com) over the Model Context Protocol.
 
 Every command wraps a `tools/call` against `https://api.buzzbitx.com/mcp` using your `bz_live_…` API key, so the CLI gets new capabilities the moment they ship on the server.
