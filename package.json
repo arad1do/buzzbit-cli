@@ -12,6 +12,8 @@
     "start": "node dist/index.js",
     "clean": "rimraf dist",
     "generate:cli": "tsx scripts/generate-from-registry.ts",
+    "verify": "bash test/verify.sh",
+    "verify:quick": "bash test/verify.sh --quick",
     "prepublishOnly": "npm run clean && npm run build"
   },
   "keywords": [
