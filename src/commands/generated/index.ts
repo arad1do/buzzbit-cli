@@ -1,6 +1,6 @@
 // AUTO-GENERATED FROM MCP REGISTRY — do not edit by hand.
 // Run `npm run generate:cli` to regenerate.
-// Source snapshot timestamp: 2026-05-12T10:21:33.556Z
+// Source snapshot timestamp: 2026-05-15T11:28:32.579Z
 //
 // The auto-generated commands live under a single `bbx mcp` namespace so
 // they don't collide with the hand-tuned commands at the top level. Use
@@ -15,8 +15,10 @@ import { buildGeneratedCommand as buildGenerated_billing } from './billing.js';
 import { buildGeneratedCommand as buildGenerated_boards } from './boards.js';
 import { buildGeneratedCommand as buildGenerated_broadcasts } from './broadcasts.js';
 import { buildGeneratedCommand as buildGenerated_campaigns } from './campaigns.js';
+import { buildGeneratedCommand as buildGenerated_chatflows } from './chatflows.js';
 import { buildGeneratedCommand as buildGenerated_content } from './content.js';
 import { buildGeneratedCommand as buildGenerated_coo } from './coo.js';
+import { buildGeneratedCommand as buildGenerated_crosschannel } from './crosschannel.js';
 import { buildGeneratedCommand as buildGenerated_customers } from './customers.js';
 import { buildGeneratedCommand as buildGenerated_discounts } from './discounts.js';
 import { buildGeneratedCommand as buildGenerated_dm } from './dm.js';
@@ -43,8 +45,10 @@ export function buildMcpCommand(): Command {
   mcp.addCommand(buildGenerated_boards());
   mcp.addCommand(buildGenerated_broadcasts());
   mcp.addCommand(buildGenerated_campaigns());
+  mcp.addCommand(buildGenerated_chatflows());
   mcp.addCommand(buildGenerated_content());
   mcp.addCommand(buildGenerated_coo());
+  mcp.addCommand(buildGenerated_crosschannel());
   mcp.addCommand(buildGenerated_customers());
   mcp.addCommand(buildGenerated_discounts());
   mcp.addCommand(buildGenerated_dm());

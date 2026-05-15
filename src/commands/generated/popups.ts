@@ -1,6 +1,6 @@
 // AUTO-GENERATED FROM MCP REGISTRY — do not edit by hand.
 // Run `npm run generate:cli` to regenerate.
-// Source snapshot timestamp: 2026-05-12T10:21:33.549Z
+// Source snapshot timestamp: 2026-05-15T11:28:32.565Z
 
 import { Command } from 'commander';
 import { callTool } from '../../lib/mcpClient.js';
@@ -8,7 +8,7 @@ import { parseFormat, printResult } from '../../lib/formatter.js';
 
 export function buildGeneratedCommand(): Command {
   const group = new Command('popups')
-    .description('Auto-generated popups commands. 4 subcommands.');
+    .description('Auto-generated popups commands. 5 subcommands.');
 
   group.command('create-popup-draft')
     .description("Create a popup in DRAFT status with design/content/triggers/targeting.")
@@ -52,6 +52,19 @@ export function buildGeneratedCommand(): Command {
       const args: Record<string, unknown> = {};
       if (opts['status'] !== undefined) args['status'] = opts['status'];
       const result = await callTool('list_popups', args);
+      printResult(result, { format: parseFormat(opts.format, 'json') });
+    });
+
+  group.command('list-popup-templates')
+    .description("Pre-built popup templates Claude can adapt for the workspace. Covers exit-intent newsletter, cart-stickness coupon, first-time-visitor discount, spin-the-wheel, and welcome bar.")
+    .option('--category <value>', "Filter by template category. (one of: newsletter, cart, discount, gamified, bar)")
+    .option('--include-shape', "If true, include the full design+content+triggers+targeting JSON. Default false (summary only).")
+    .option('--format <fmt>', 'table | json | csv', 'json')
+    .action(async (opts) => {
+      const args: Record<string, unknown> = {};
+      if (opts['category'] !== undefined) args['category'] = opts['category'];
+      if (opts['includeShape'] !== undefined) args['includeShape'] = opts['includeShape'];
+      const result = await callTool('list_popup_templates', args);
       printResult(result, { format: parseFormat(opts.format, 'json') });
     });
 

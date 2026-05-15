@@ -1,6 +1,6 @@
 // AUTO-GENERATED FROM MCP REGISTRY — do not edit by hand.
 // Run `npm run generate:cli` to regenerate.
-// Source snapshot timestamp: 2026-05-12T10:21:33.537Z
+// Source snapshot timestamp: 2026-05-15T11:28:32.550Z
 
 import { Command } from 'commander';
 import { callTool } from '../../lib/mcpClient.js';
@@ -22,9 +22,9 @@ export function buildGeneratedCommand(): Command {
     });
 
   group.command('create-campaign-draft')
-    .description("Create an email/SMS/WhatsApp campaign in DRAFT status with text content.")
+    .description("Create an email/WhatsApp campaign in DRAFT status with text content.")
     .option('--name <value>', "")
-    .option('--type <value>', " (one of: email, sms, whatsapp)")
+    .option('--type <value>', " (one of: email, whatsapp)")
     .option('--subject <value>', "")
     .option('--content <value>', "Plain-text or markdown body. Use create_campaign_draft_with_html for HTML.")
     .option('--segment-id <value>', "")
@@ -75,7 +75,7 @@ export function buildGeneratedCommand(): Command {
   group.command('list')
     .description("List campaigns in the current workspace with metrics (sent/opened/clicked/converted/revenue).")
     .option('--status <value>', "Filter by campaign status (draft, scheduled, sent, etc.).")
-    .option('--type <value>', " (one of: email, sms, whatsapp)")
+    .option('--type <value>', " (one of: email, whatsapp)")
     .option('--limit <number>', "", (v) => Number(v))
     .option('--format <fmt>', 'table | json | csv', 'json')
     .action(async (opts) => {

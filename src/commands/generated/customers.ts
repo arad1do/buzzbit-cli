@@ -1,6 +1,6 @@
 // AUTO-GENERATED FROM MCP REGISTRY — do not edit by hand.
 // Run `npm run generate:cli` to regenerate.
-// Source snapshot timestamp: 2026-05-12T10:21:33.539Z
+// Source snapshot timestamp: 2026-05-15T11:28:32.558Z
 
 import { Command } from 'commander';
 import { callTool } from '../../lib/mcpClient.js';
@@ -244,14 +244,12 @@ export function buildGeneratedCommand(): Command {
     .description("Update a customer\\")
     .option('--customer-id <value>', "")
     .option('--email-consent', "Email Newsletter opt-in / opt-out.")
-    .option('--sms-consent', "SMS Marketing opt-in / opt-out.")
     .option('--whatsapp-opt-in', "WhatsApp opt-in / opt-out.")
     .option('--format <fmt>', 'table | json | csv', 'json')
     .action(async (opts) => {
       const args: Record<string, unknown> = {};
       if (opts['customerId'] !== undefined) args['customerId'] = opts['customerId'];
       if (opts['emailConsent'] !== undefined) args['emailConsent'] = opts['emailConsent'];
-      if (opts['smsConsent'] !== undefined) args['smsConsent'] = opts['smsConsent'];
       if (opts['whatsappOptIn'] !== undefined) args['whatsappOptIn'] = opts['whatsappOptIn'];
       const result = await callTool('update_customer_marketing_preferences', args);
       printResult(result, { format: parseFormat(opts.format, 'json') });
