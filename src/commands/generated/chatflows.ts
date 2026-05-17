@@ -1,6 +1,6 @@
 // AUTO-GENERATED FROM MCP REGISTRY — do not edit by hand.
 // Run `npm run generate:cli` to regenerate.
-// Source snapshot timestamp: 2026-05-15T11:28:32.554Z
+// Source snapshot timestamp: 2026-05-17T08:42:26.807Z
 
 import { Command } from 'commander';
 import { callTool } from '../../lib/mcpClient.js';
@@ -25,7 +25,7 @@ export function buildGeneratedCommand(): Command {
     .description("Create a new ChatFlow in DRAFT status for WhatsApp / Instagram / Messenger DM automation. Use validate_flow_graph-style rules before sending: trigger has no incoming, every condition has both branches, every condition needs a default fallback to handoff.")
     .option('--name <value>', "")
     .option('--description <value>', "")
-    .option('--trigger <value>', "Lowercase chatflow trigger from the ChatFlowTriggerType enum (23 values). Common: whatsapp_message, whatsapp_first_message, whatsapp_keyword, instagram_dm, instagram_comment, keyword_match.")
+    .option('--trigger <value>', "Lowercase chatflow trigger from the ChatFlowTriggerType enum (23 values). Common: whatsapp_message, whatsapp_first_message, whatsapp_keyword, instagram_dm, instagram_comment, keyword_match. (one of: any_message, cart_abandoned, facebook_message, facebook_new_follower, first_purchase, instagram_comment, instagram_dm, instagram_new_follower, instagram_story_reply, order_placed, whatsapp_message, whatsapp_first_message, whatsapp_keyword, keyword_match, shopify_order_created, shopify_order_cancelled, shopify_order_fulfilled, shopify_cart_abandoned, shopify_checkout_abandoned, shopify_customer_created, shopify_price_drop, shopify_back_in_stock, shopify_refund_created)")
     .option('--trigger-config <json>', "Optional config — e.g. { keywords: [ (JSON string, parsed before send)", (v) => JSON.parse(v))
     .option('--nodes <json>', "ChatFlow nodes (trigger, message, question, condition, ai_response, whatsapp_template, handoff, end). (JSON string, parsed before send)", (v) => JSON.parse(v))
     .option('--edges <json>', "Edges connecting nodes. Default empty. (JSON string, parsed before send)", (v) => JSON.parse(v))
@@ -75,7 +75,7 @@ export function buildGeneratedCommand(): Command {
     .option('--chatflow-id <value>', "")
     .option('--name <value>', "")
     .option('--description <value>', "")
-    .option('--trigger <value>', "")
+    .option('--trigger <value>', " (one of: any_message, cart_abandoned, facebook_message, facebook_new_follower, first_purchase, instagram_comment, instagram_dm, instagram_new_follower, instagram_story_reply, order_placed, whatsapp_message, whatsapp_first_message, whatsapp_keyword, keyword_match, shopify_order_created, shopify_order_cancelled, shopify_order_fulfilled, shopify_cart_abandoned, shopify_checkout_abandoned, shopify_customer_created, shopify_price_drop, shopify_back_in_stock, shopify_refund_created)")
     .option('--trigger-config <json>', "JSON value (JSON string, parsed before send)", (v) => JSON.parse(v))
     .option('--nodes <json>', "JSON value (JSON string, parsed before send)", (v) => JSON.parse(v))
     .option('--edges <json>', "JSON value (JSON string, parsed before send)", (v) => JSON.parse(v))

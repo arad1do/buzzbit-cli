@@ -1,6 +1,6 @@
 // AUTO-GENERATED FROM MCP REGISTRY — do not edit by hand.
 // Run `npm run generate:cli` to regenerate.
-// Source snapshot timestamp: 2026-05-15T11:28:32.563Z
+// Source snapshot timestamp: 2026-05-17T08:42:26.814Z
 
 import { Command } from 'commander';
 import { callTool } from '../../lib/mcpClient.js';
@@ -37,7 +37,7 @@ export function buildGeneratedCommand(): Command {
     .option('--name <value>', "")
     .option('--description <value>', "")
     .option('--category <value>', "")
-    .option('--trigger <value>', "Trigger event name (lowercase snake_case). Common: cart_abandoned, order_placed, customer_created, customer_birthday, new_subscriber, product_price_drop, product_back_in_stock. See FLOW_TRIGGER_VALUES for the full list.")
+    .option('--trigger <value>', "Trigger event name (lowercase snake_case). Common: cart_abandoned, order_placed, customer_created, customer_birthday, new_subscriber, product_price_drop, product_back_in_stock. See FLOW_TRIGGER_VALUES for the full list. (one of: order_placed, order_cancelled, order_fulfilled, order_paid, order_updated, customer_created, customer_updated, customer_inactive, customer_lapsed, customer_birthday, cart_abandoned, checkout_abandoned, browse_abandoned, new_subscriber, product_price_drop, product_low_inventory, product_back_in_stock, product_created, product_updated, product_deleted, product_viewed, refund_created, fulfillment_created, fulfillment_updated, vip_achieved, email_opened, email_clicked, email_bounced, email_unsubscribed, email_complained, custom_event, manual, segment_entered, segment_exited, whatsapp_message_received, instagram_comment_received, instagram_dm_received, instagram_story_reply_received, instagram_follow_received, facebook_message_received, facebook_follow_received, sunset, winback, birthday, BROWSE_ABANDONED, VIP_ACHIEVED, viewed_product, SOCIAL_COMMENT, instagram_comment, instagram_story_reply, instagram_follow)")
     .option('--segment-id <value>', "")
     .option('--nodes <json>', "Flow nodes graph (ReactFlow JSON). (JSON string, parsed before send)", (v) => JSON.parse(v))
     .option('--definition <json>', "JSON value (JSON string, parsed before send)", (v) => JSON.parse(v))
@@ -131,7 +131,7 @@ export function buildGeneratedCommand(): Command {
 
   group.command('list-template-variables')
     .description("For a given flow trigger, return the variables emitted in its payload. Call this before composing email content so {{var}} references resolve at send time.")
-    .option('--trigger-type <value>', "Lowercase snake_case trigger name from the FlowTriggerType enum.")
+    .option('--trigger-type <value>', "Lowercase snake_case trigger name from the FlowTriggerType enum. (one of: order_placed, order_cancelled, order_fulfilled, order_paid, order_updated, customer_created, customer_updated, customer_inactive, customer_lapsed, customer_birthday, cart_abandoned, checkout_abandoned, browse_abandoned, new_subscriber, product_price_drop, product_low_inventory, product_back_in_stock, product_created, product_updated, product_deleted, product_viewed, refund_created, fulfillment_created, fulfillment_updated, vip_achieved, email_opened, email_clicked, email_bounced, email_unsubscribed, email_complained, custom_event, manual, segment_entered, segment_exited, whatsapp_message_received, instagram_comment_received, instagram_dm_received, instagram_story_reply_received, instagram_follow_received, facebook_message_received, facebook_follow_received, sunset, winback, birthday, BROWSE_ABANDONED, VIP_ACHIEVED, viewed_product, SOCIAL_COMMENT, instagram_comment, instagram_story_reply, instagram_follow)")
     .option('--format <fmt>', 'table | json | csv', 'json')
     .action(async (opts) => {
       const args: Record<string, unknown> = {};
@@ -146,7 +146,7 @@ export function buildGeneratedCommand(): Command {
     .option('--name <value>', "")
     .option('--description <value>', "")
     .option('--category <value>', "")
-    .option('--trigger <value>', "")
+    .option('--trigger <value>', " (one of: order_placed, order_cancelled, order_fulfilled, order_paid, order_updated, customer_created, customer_updated, customer_inactive, customer_lapsed, customer_birthday, cart_abandoned, checkout_abandoned, browse_abandoned, new_subscriber, product_price_drop, product_low_inventory, product_back_in_stock, product_created, product_updated, product_deleted, product_viewed, refund_created, fulfillment_created, fulfillment_updated, vip_achieved, email_opened, email_clicked, email_bounced, email_unsubscribed, email_complained, custom_event, manual, segment_entered, segment_exited, whatsapp_message_received, instagram_comment_received, instagram_dm_received, instagram_story_reply_received, instagram_follow_received, facebook_message_received, facebook_follow_received, sunset, winback, birthday, BROWSE_ABANDONED, VIP_ACHIEVED, viewed_product, SOCIAL_COMMENT, instagram_comment, instagram_story_reply, instagram_follow)")
     .option('--segment-id <value>', "")
     .option('--nodes <json>', "JSON value (JSON string, parsed before send)", (v) => JSON.parse(v))
     .option('--definition <json>', "JSON value (JSON string, parsed before send)", (v) => JSON.parse(v))
@@ -181,7 +181,7 @@ export function buildGeneratedCommand(): Command {
   group.command('validate-template-string')
     .description("Check that every {{variable}} in a template resolves against a trigger\\")
     .option('--template <value>', "Template string with {{variable.path}} placeholders. Pass an email subject or body.")
-    .option('--trigger-type <value>', "The trigger whose payload the template will resolve against.")
+    .option('--trigger-type <value>', "The trigger whose payload the template will resolve against. (one of: order_placed, order_cancelled, order_fulfilled, order_paid, order_updated, customer_created, customer_updated, customer_inactive, customer_lapsed, customer_birthday, cart_abandoned, checkout_abandoned, browse_abandoned, new_subscriber, product_price_drop, product_low_inventory, product_back_in_stock, product_created, product_updated, product_deleted, product_viewed, refund_created, fulfillment_created, fulfillment_updated, vip_achieved, email_opened, email_clicked, email_bounced, email_unsubscribed, email_complained, custom_event, manual, segment_entered, segment_exited, whatsapp_message_received, instagram_comment_received, instagram_dm_received, instagram_story_reply_received, instagram_follow_received, facebook_message_received, facebook_follow_received, sunset, winback, birthday, BROWSE_ABANDONED, VIP_ACHIEVED, viewed_product, SOCIAL_COMMENT, instagram_comment, instagram_story_reply, instagram_follow)")
     .option('--format <fmt>', 'table | json | csv', 'json')
     .action(async (opts) => {
       const args: Record<string, unknown> = {};
