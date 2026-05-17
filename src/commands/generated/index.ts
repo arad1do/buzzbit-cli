@@ -1,6 +1,6 @@
 // AUTO-GENERATED FROM MCP REGISTRY — do not edit by hand.
 // Run `npm run generate:cli` to regenerate.
-// Source snapshot timestamp: 2026-05-15T11:28:32.579Z
+// Source snapshot timestamp: 2026-05-17T08:42:26.827Z
 //
 // The auto-generated commands live under a single `bbx mcp` namespace so
 // they don't collide with the hand-tuned commands at the top level. Use

@@ -6,6 +6,7 @@ import { Command } from 'commander';
 import { callTool } from '../lib/mcpClient.js';
 import { parseFormat, printResult, printRecord } from '../lib/formatter.js';
 import { ValidationError } from '../lib/errors.js';
+import { FLOW_TRIGGER_VALUES } from '../lib/generated-enums.js';
 
 const FLOW_TABLE_COLS = ['id', 'name', 'trigger', 'status', 'totalSent', 'updatedAt'];
 
@@ -64,16 +65,57 @@ function buildCancelCommand(): Command {
     });
 }
 
+// Pick a friendly sample of trigger names for --help text. The full list
+// (49 values incl. deprecated aliases) lives in the generated-enums file
+// and is the source of truth for runtime validation.
+const COMMON_TRIGGERS = [
+  'cart_abandoned',
+  'browse_abandoned',
+  'new_subscriber',
+  'order_placed',
+  'order_fulfilled',
+  'customer_birthday',
+  'product_back_in_stock',
+  'product_price_drop',
+] as const;
+
 function buildCreateDraftCommand(): Command {
   return new Command('create-draft')
     .description('Create a new email flow draft')
     .requiredOption('--name <name>', 'Internal flow name')
-    .requiredOption('--trigger <trigger>', 'cart_abandoned | welcome | post_purchase | browse_abandoned | win_back | birthday | order_fulfilled')
+    .option(
+      '--trigger <trigger>',
+      `Event that fires the flow. Common: ${COMMON_TRIGGERS.join(' | ')}. ` +
+        `Full list (${FLOW_TRIGGER_VALUES.length} values): see https://buzzbitx.com/docs/mcp#flows or 'bbx mcp flows create-flow-draft --help'.`,
+    )
     .option('--description <text>', 'Optional description')
+    .option(
+      '--nodes-file <path>',
+      'Path to a JSON file containing the ReactFlow graph ({ nodes: [], edges: [] }). Defaults to an empty canvas the merchant can design later in the UI.',
+    )
     .option('--format <format>', 'table | json', 'table')
-    .action(async (opts: { name: string; trigger: string; description?: string; format?: string }) => {
-      const args: Record<string, unknown> = { name: opts.name, trigger: opts.trigger };
+    .action(async (opts: { name: string; trigger?: string; description?: string; nodesFile?: string; format?: string }) => {
+      // Validate trigger against the canonical list resolved from the server source.
+      if (opts.trigger !== undefined && !(FLOW_TRIGGER_VALUES as readonly string[]).includes(opts.trigger)) {
+        throw new ValidationError(
+          `Unknown trigger '${opts.trigger}'. Common values: ${COMMON_TRIGGERS.join(', ')}. ` +
+            `Run 'bbx mcp flows create-flow-draft --help' for the full list.`,
+        );
+      }
+      const args: Record<string, unknown> = { name: opts.name };
+      if (opts.trigger) args.trigger = opts.trigger;
       if (opts.description) args.description = opts.description;
+      if (opts.nodesFile) {
+        const fs = await import('node:fs');
+        try {
+          const raw = fs.readFileSync(opts.nodesFile, 'utf8');
+          args.nodes = JSON.parse(raw);
+        } catch (err) {
+          throw new ValidationError(
+            `Failed to read --nodes-file '${opts.nodesFile}': ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      }
       const result = await callTool('create_flow_draft', args);
       printRecord(result, parseFormat(opts.format));
     });

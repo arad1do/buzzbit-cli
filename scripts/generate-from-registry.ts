@@ -18,13 +18,19 @@
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync, existsSync, rmSync } from 'node:fs';
-import { join, dirname, basename, relative } from 'node:path';
+import { join, dirname, basename, relative, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, '..');
 const MCP_TOOLS_DIR = join(REPO_ROOT, '..', 'buzzbitx1', 'server', 'src', 'mcp', 'tools');
 const OUT_DIR = join(REPO_ROOT, 'src', 'commands', 'generated');
+const ENUMS_OUT_FILE = join(REPO_ROOT, 'src', 'lib', 'generated-enums.ts');
+
+// Enums resolved from `z.enum(IDENTIFIER)` references during this run.
+// Emitted to ENUMS_OUT_FILE so manual wrappers can import the canonical
+// list instead of hardcoding their own (which drifts).
+const RESOLVED_ENUMS = new Map<string, string[]>();
 
 // ----- types ----------------------------------------------------------------
 
@@ -103,7 +109,7 @@ function parseToolFile(filePath: string): McpTool | null {
   const cliGroup = pluck(src, /cli:\s*\{[^}]*group:\s*['"]([a-zA-Z_-]+)['"]/);
   const cliVerb = pluck(src, /cli:\s*\{[^}]*verb:\s*['"]([a-zA-Z_-]+)['"]/);
 
-  const inputSchema = parseInputSchema(src);
+  const inputSchema = parseInputSchema(src, filePath);
 
   return {
     filePath,
@@ -118,6 +124,55 @@ function parseToolFile(filePath: string): McpTool | null {
   };
 }
 
+/**
+ * Resolve `z.enum(IDENTIFIER)` references like `z.enum(FLOW_TRIGGER_VALUES)`.
+ *
+ * Walks the source file's imports to find where IDENTIFIER comes from,
+ * then reads that file looking for `export const IDENTIFIER = [ ... ] as const`.
+ * Returns the resolved string values, or null if anything fails.
+ *
+ * Caches results in RESOLVED_ENUMS so we can dump them to a shared constants
+ * file for manual wrappers to import.
+ */
+function resolveEnumIdentifier(identifier: string, sourceFilePath: string): string[] | null {
+  const cached = RESOLVED_ENUMS.get(identifier);
+  if (cached) return cached;
+  const src = readFileSync(sourceFilePath, 'utf8');
+  // Find: import { ..., IDENTIFIER, ... } from '<path>';
+  // Accept multi-line import blocks.
+  const importRe = new RegExp(
+    `import\\s*\\{[^}]*\\b${identifier}\\b[^}]*\\}\\s*from\\s*['"]([^'"]+)['"]`,
+    'm',
+  );
+  const m = src.match(importRe);
+  if (!m) return null;
+  let importPath = m[1];
+  // Node ESM convention: imports use .js extension even when the source is .ts.
+  if (importPath.endsWith('.js')) importPath = importPath.slice(0, -3) + '.ts';
+  else if (!importPath.endsWith('.ts')) importPath = importPath + '.ts';
+  const absolute = resolvePath(dirname(sourceFilePath), importPath);
+  if (!existsSync(absolute)) return null;
+  const targetSrc = readFileSync(absolute, 'utf8');
+  // Find: export const IDENTIFIER = [ ... ] as const;   (multi-line, with comments)
+  const constRe = new RegExp(
+    `export\\s+const\\s+${identifier}\\s*=\\s*\\[([\\s\\S]*?)\\]\\s*as\\s*const`,
+    'm',
+  );
+  const cm = targetSrc.match(constRe);
+  if (!cm) return null;
+  // Strip line + block comments before extracting string literals
+  const cleaned = cm[1]
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/[^\n]*/g, '');
+  const stringPieces = cleaned.match(/['"`]([^'"`]+)['"`]/g) ?? [];
+  const values = stringPieces
+    .map((s) => s.slice(1, -1))
+    .filter((s) => /^[\w.:-]+$/.test(s)); // skip anything weird
+  if (values.length === 0) return null;
+  RESOLVED_ENUMS.set(identifier, values);
+  return values;
+}
+
 function deriveCategoryFromPath(filePath: string): string {
   // .../server/src/mcp/tools/<category>/file.ts
   const parts = filePath.split(/[/\\]/);
@@ -128,7 +183,7 @@ function deriveCategoryFromPath(filePath: string): string {
 // Parse a `const inputSchema = { ... };` block. We only handle the subset
 // our actual tools use — anything weirder we mark `unknown` and emit a
 // generic --<field> <value> flag, leaving the merchant to JSON-stringify.
-function parseInputSchema(src: string): ZodField[] {
+function parseInputSchema(src: string, sourceFilePath: string): ZodField[] {
   // Explicit empty-schema short-circuit. Without this the greedy `[\s\S]*?\n\};`
   // fallback below matches up to the tool definition's closing `};`, which
   // makes the tool-def fields (description/scope/category/handler) leak into
@@ -152,19 +207,19 @@ function parseInputSchema(src: string): ZodField[] {
       else if (ch === ')' || ch === '}' || ch === ']') depth -= 1;
     }
     if (depth === 0 && buffer.trim().endsWith(',')) {
-      const field = parseFieldEntry(buffer.trim().replace(/,$/, ''));
+      const field = parseFieldEntry(buffer.trim().replace(/,$/, ''), sourceFilePath);
       if (field) entries.push(field);
       buffer = '';
     }
   }
   if (buffer.trim()) {
-    const field = parseFieldEntry(buffer.trim());
+    const field = parseFieldEntry(buffer.trim(), sourceFilePath);
     if (field) entries.push(field);
   }
   return entries;
 }
 
-function parseFieldEntry(text: string): ZodField | null {
+function parseFieldEntry(text: string, sourceFilePath: string): ZodField | null {
   const m = text.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*([\s\S]+)$/);
   if (!m) return null;
   const name = m[1];
@@ -180,12 +235,19 @@ function parseFieldEntry(text: string): ZodField | null {
   else if (/z\.array\(z\.string\(\)/.test(chain)) kind = 'string-array';
   else if (/z\.enum\(/.test(chain)) {
     kind = 'enum';
-    const enumMatch = chain.match(/z\.enum\(\[([^\]]+)\]/);
-    if (enumMatch) {
-      enumValues = enumMatch[1]
+    const inlineMatch = chain.match(/z\.enum\(\[([^\]]+)\]/);
+    if (inlineMatch) {
+      enumValues = inlineMatch[1]
         .split(',')
         .map((s) => s.trim().replace(/^['"`]|['"`]$/g, ''))
         .filter(Boolean);
+    } else {
+      // z.enum(IDENTIFIER) — resolve through the source file's imports.
+      const refMatch = chain.match(/z\.enum\(([A-Za-z_][A-Za-z0-9_]*)\)/);
+      if (refMatch) {
+        const resolved = resolveEnumIdentifier(refMatch[1], sourceFilePath);
+        if (resolved && resolved.length > 0) enumValues = resolved;
+      }
     }
   } else if (/z\.nativeEnum\(/.test(chain)) {
     kind = 'enum';
@@ -406,11 +468,44 @@ function main(): void {
   groupNames.sort();
   writeFileSync(join(OUT_DIR, 'index.ts'), emitGeneratedIndex(groupNames), 'utf8');
 
+  // Emit shared enums file for manual wrappers to import. Lets `src/commands/*.ts`
+  // reference the canonical values resolved during this run instead of hardcoding
+  // a list that drifts every time the server side adds/removes a trigger.
+  if (RESOLVED_ENUMS.size > 0) {
+    mkdirSync(dirname(ENUMS_OUT_FILE), { recursive: true });
+    const enumLines: string[] = [
+      '// AUTO-GENERATED FROM MCP REGISTRY — do not edit by hand.',
+      '// Run `npm run generate:cli` to regenerate.',
+      `// Source snapshot timestamp: ${new Date().toISOString()}`,
+      '//',
+      '// Each export is the array of values from a `z.enum(IDENTIFIER)` reference',
+      '// resolved by walking imports back to the server source file. Use these in',
+      '// hand-tuned commands under src/commands/ to keep --help text in sync with',
+      '// what the server actually accepts.',
+      '',
+    ];
+    const sortedKeys = Array.from(RESOLVED_ENUMS.keys()).sort();
+    for (const key of sortedKeys) {
+      const values = RESOLVED_ENUMS.get(key)!;
+      enumLines.push(`export const ${key} = ${JSON.stringify(values, null, 2)} as const;`);
+      enumLines.push(`export type ${key.replace(/_VALUES$/, '')}Value = (typeof ${key})[number];`);
+      enumLines.push('');
+    }
+    writeFileSync(ENUMS_OUT_FILE, enumLines.join('\n'), 'utf8');
+  }
+
   process.stdout.write(
     `Generated ${tools.length} commands across ${groupNames.length} groups ` +
       `(${skipped} skipped via cli.skip). Files at ${relative(REPO_ROOT, OUT_DIR)}.\n`,
   );
   process.stdout.write('Groups: ' + groupNames.join(', ') + '\n');
+  if (RESOLVED_ENUMS.size > 0) {
+    process.stdout.write(
+      `Resolved ${RESOLVED_ENUMS.size} z.enum(IDENTIFIER) reference(s): ` +
+        Array.from(RESOLVED_ENUMS.keys()).sort().join(', ') +
+        `\n  → emitted to ${relative(REPO_ROOT, ENUMS_OUT_FILE)}\n`,
+    );
+  }
   // Suppress unused-import warnings during dev.
   void basename;
 }
